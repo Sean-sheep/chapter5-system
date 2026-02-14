@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>推荐展示</title>
+    <!-- 引入CSS样式 -->
+    <link rel="stylesheet" href="../../css/style.css">
+    <!-- 引入Chart.js库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 引入主JavaScript文件 -->
+    <script src="../../js/main.js"></script>
+</head>
+<body>
+    <!-- 头部 -->
+    <header class="header">
+        <div class="container">
+            <h1>城市旅游消费个性化推荐系统</h1>
+        </div>
+    </header>
+
+    <!-- 导航菜单 -->
+    <nav class="nav">
+        <div class="container">
+            <ul>
+                <li><a href="../../index.html">首页</a></li>
+                <li><a href="../communication/index.html">通信压缩分析</a></li>
+                <li><a href="../adaptive/index.html">自适应迭代分析</a></li>
+                <li><a href="../personalization/index.html">个性化权重分析</a></li>
+                <li><a href="index.html" class="active">推荐展示</a></li>
+                <li><a href="../comparison/index.html">综合对比</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="container">
+        <div class="page-layout">
+            <!-- 侧边栏 -->
+            <aside class="sidebar">
+                <h3>推荐参数配置</h3>
+                
+                <div class="form-group">
+                    <label for="city-select">选择城市</label>
+                    <select id="city-select" class="form-control">
+                        <option value="Tokyo">东京</option>
+                        <option value="Osaka">大阪</option>
+                        <option value="Nagoya">名古屋</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="user-id">用户ID</label>
+                    <input type="number" id="user-id" min="0" max="99999" value="123" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label for="top-k">Top-K</label>
+                    <select id="top-k" class="form-control">
+                        <option value="5">5</option>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="round-select">训练轮次</label>
+                    <select id="round-select" class="form-control">
+                        <option value="latest">最新</option>
+                        <option value="0">轮次 0</option>
+                        <option value="10">轮次 10</option>
+                        <option value="20">轮次 20</option>
+                        <option value="30">轮次 30</option>
+                        <option value="40">轮次 40</option>
+                        <option value="50">轮次 50</option>
+                    </select>
+                </div>
+                
+                <button id="generate-btn" class="btn btn-primary" style="width: 100%; margin-top: 15px;">生成推荐</button>
+            </aside>
+
+            <!-- 主内容 -->
+            <div class="main-content">
+                <!-- 推荐结果 -->
+                <section class="card">
+                    <h3>推荐结果</h3>
+                    <div class="table-responsive">
+                        <table class="table recommendation-table" id="recommendation-table">
+                            <thead>
+                                <tr>
+                                    <th class="rank-column">排名</th>
+                                    <th>商品ID</th>
+                                    <th>商品名称</th>
+                                    <th class="score-column">评分</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" class="text-center">加载中...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="export-button">
+                        <button id="export-recommendation-btn" class="btn btn-secondary">导出为CSV</button>
+                    </div>
+                </section>
+
+                <!-- 多城市对比 -->
+                <section class="card">
+                    <h3>多城市推荐对比</h3>
+                    
+                    <div class="form-group">
+                        <label for="compare-cities">选择对比城市</label>
+                        <select id="compare-cities" class="form-control" multiple size="3">
+                            <option value="Tokyo">东京</option>
+                            <option value="Osaka">大阪</option>
+                            <option value="Nagoya">名古屋</option>
+                        </select>
+                    </div>
+                    
+                    <button id="compare-btn" class="btn btn-primary">对比推荐</button>
+                    
+                    <div class="table-responsive" style="margin-top: 20px;">
+                        <table class="table comparison-table" id="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>排名</th>
+                                    <th class="city-column">东京</th>
+                                    <th class="city-column">大阪</th>
+                                    <th class="city-column">名古屋</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" class="text-center">点击"对比推荐"按钮查看结果</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="export-button">
+                        <button id="export-comparison-btn" class="btn btn-secondary">导出对比结果</button>
+                    </div>
+                </section>
+
+                <!-- 推荐性能 -->
+                <section class="card">
+                    <h3>推荐性能</h3>
+                    <div class="grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="recommendation-time">0s</div>
+                            <div class="stat-label">推荐生成时间</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="model-version">-</div>
+                            <div class="stat-label">模型版本</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-items">0</div>
+                            <div class="stat-label">总推荐商品数</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="avg-score">0</div>
+                            <div class="stat-label">平均评分</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 城市旅游消费个性化推荐系统</p>
+        </div>
+    </footer>
+
+    <!-- 页面脚本 -->
+    <script>
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            // 绑定生成推荐按钮事件
+            document.getElementById('generate-btn').addEventListener('click', generateRecommendation);
+            
+            // 绑定对比推荐按钮事件
+            document.getElementById('compare-btn').addEventListener('click', compareRecommendations);
+            
+            // 绑定导出按钮事件
+            document.getElementById('export-recommendation-btn').addEventListener('click', exportRecommendation);
+            document.getElementById('export-comparison-btn').addEventListener('click', exportComparison);
+            
+            // 初始加载推荐
+            generateRecommendation();
+        });
+        
+        // 生成推荐
+        async function generateRecommendation() {
+            try {
+                // 获取参数
+                const city = document.getElementById('city-select').value;
+                const userId = parseInt(document.getElementById('user-id').value);
+                const topK = parseInt(document.getElementById('top-k').value);
+                const round = document.getElementById('round-select').value === 'latest' ? null : parseInt(document.getElementById('round-select').value);
+                
+                // 显示加载状态
+                const tableBody = document.querySelector('#recommendation-table tbody');
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center"><div class="loading"></div></td></tr>';
+                
+                // 记录开始时间
+                const startTime = performance.now();
+                
+                // 加载推荐数据
+                const data = await DataLoader.loadRecommendationData(city, userId, topK, round);
+                
+                // 计算推荐生成时间
+                const endTime = performance.now();
+                const recommendationTime = (endTime - startTime) / 1000;
+                
+                // 更新推荐结果
+                updateRecommendationTable(data.recommendations);
+                
+                // 更新性能指标
+                updatePerformanceMetrics(recommendationTime, data.recommendations);
+            } catch (error) {
+                console.error('生成推荐失败:', error);
+                const tableBody = document.querySelector('#recommendation-table tbody');
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center"><div class="error">生成推荐失败</div></td></tr>';
+            }
+        }
+        
+        // 对比推荐
+        async function compareRecommendations() {
+            try {
+                // 获取参数
+                const compareCitiesSelect = document.getElementById('compare-cities');
+                const selectedOptions = Array.from(compareCitiesSelect.selectedOptions);
+                const cities = selectedOptions.map(option => option.value);
+                
+                if (cities.length === 0) {
+                    alert('请至少选择一个城市进行对比');
+                    return;
+                }
+                
+                const userId = parseInt(document.getElementById('user-id').value);
+                const topK = parseInt(document.getElementById('top-k').value);
+                const round = document.getElementById('round-select').value === 'latest' ? null : parseInt(document.getElementById('round-select').value);
+                
+                // 显示加载状态
+                const tableBody = document.querySelector('#comparison-table tbody');
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center"><div class="loading"></div></td></tr>';
+                
+                // 加载对比数据
+                const data = await DataLoader.loadComparisonData(cities, userId, topK, round);
+                
+                // 更新对比结果
+                updateComparisonTable(data.comparisons, cities);
+            } catch (error) {
+                console.error('对比推荐失败:', error);
+                const tableBody = document.querySelector('#comparison-table tbody');
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center"><div class="error">对比推荐失败</div></td></tr>';
+            }
+        }
+        
+        // 更新推荐结果表格
+        function updateRecommendationTable(recommendations) {
+            const tableBody = document.querySelector('#recommendation-table tbody');
+            
+            if (!recommendations || recommendations.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center">没有推荐结果</td></tr>';
+                return;
+            }
+            
+            const rows = recommendations.map((item, index) => `
+                <tr>
+                    <td class="rank-column">${index + 1}</td>
+                    <td>${item.item_id}</td>
+                    <td>${item.item_name}</td>
+                    <td class="score-column">${item.score.toFixed(3)}</td>
+                </tr>
+            `).join('');
+            
+            tableBody.innerHTML = rows;
+        }
+        
+        // 更新对比结果表格
+        function updateComparisonTable(comparisons, cities) {
+            const tableBody = document.querySelector('#comparison-table tbody');
+            
+            if (!comparisons || comparisons.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4" class="text-center">没有对比结果</td></tr>';
+                return;
+            }
+            
+            // 准备对比数据
+            const maxRank = Math.max(...comparisons.map(cityData => cityData.recommendations.length));
+            const rows = [];
+            
+            for (let i = 0; i < maxRank; i++) {
+                let row = `<tr><td>${i + 1}</td>`;
+                
+                cities.forEach(city => {
+                    const cityData = comparisons.find(c => c.city === city);
+                    const item = cityData && cityData.recommendations[i] ? cityData.recommendations[i] : null;
+                    row += `<td>${item ? item.item_name : '-'}</td>`;
+                });
+                
+                row += '</tr>';
+                rows.push(row);
+            }
+            
+            tableBody.innerHTML = rows.join('');
+        }
+        
+        // 更新性能指标
+        function updatePerformanceMetrics(time, recommendations) {
+            document.getElementById('recommendation-time').textContent = `${time.toFixed(2)}s`;
+            document.getElementById('model-version').textContent = document.getElementById('round-select').value;
+            document.getElementById('total-items').textContent = recommendations.length;
+            
+            if (recommendations.length > 0) {
+                const avgScore = recommendations.reduce((sum, item) => sum + item.score, 0) / recommendations.length;
+                document.getElementById('avg-score').textContent = avgScore.toFixed(3);
+            } else {
+                document.getElementById('avg-score').textContent = '0';
+            }
+        }
+        
+        // 导出推荐结果
+        function exportRecommendation() {
+            const tableBody = document.querySelector('#recommendation-table tbody');
+            const rows = tableBody.querySelectorAll('tr');
+            
+            if (rows.length === 0 || rows[0].querySelector('td').colSpan) {
+                alert('没有推荐结果可导出');
+                return;
+            }
+            
+            const data = Array.from(rows).map(row => {
+                const cells = row.querySelectorAll('td');
+                return {
+                    rank: cells[0].textContent,
+                    item_id: cells[1].textContent,
+                    item_name: cells[2].textContent,
+                    score: cells[3].textContent
+                };
+            });
+            
+            Utils.generateCSV(data, 'recommendation_result.csv');
+        }
+        
+        // 导出对比结果
+        function exportComparison() {
+            const tableBody = document.querySelector('#comparison-table tbody');
+            const rows = tableBody.querySelectorAll('tr');
+            
+            if (rows.length === 0 || rows[0].querySelector('td').colSpan) {
+                alert('没有对比结果可导出');
+                return;
+            }
+            
+            const data = Array.from(rows).map(row => {
+                const cells = row.querySelectorAll('td');
+                return {
+                    rank: cells[0].textContent,
+                    Tokyo: cells[1].textContent,
+                    Osaka: cells[2].textContent,
+                    Nagoya: cells[3].textContent
+                };
+            });
+            
+            Utils.generateCSV(data, 'comparison_result.csv');
+        }
+    </script>
+</body>
+</html>

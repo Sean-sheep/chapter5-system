@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>综合对比</title>
+    <!-- 引入CSS样式 -->
+    <link rel="stylesheet" href="../../css/style.css">
+    <!-- 引入Chart.js库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 引入主JavaScript文件 -->
+    <script src="../../js/main.js"></script>
+</head>
+<body>
+    <!-- 头部 -->
+    <header class="header">
+        <div class="container">
+            <h1>城市旅游消费个性化推荐系统</h1>
+        </div>
+    </header>
+
+    <!-- 导航菜单 -->
+    <nav class="nav">
+        <div class="container">
+            <ul>
+                <li><a href="../../index.html">首页</a></li>
+                <li><a href="../communication/index.html">通信压缩分析</a></li>
+                <li><a href="../adaptive/index.html">自适应迭代分析</a></li>
+                <li><a href="../personalization/index.html">个性化权重分析</a></li>
+                <li><a href="../recommendation/index.html">推荐展示</a></li>
+                <li><a href="index.html" class="active">综合对比</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="container">
+        <div class="page-layout">
+            <!-- 侧边栏 -->
+            <aside class="sidebar">
+                <h3>参数配置</h3>
+                
+                <div class="form-group">
+                    <label for="round-select">训练轮次</label>
+                    <select id="round-select" class="form-control">
+                        <option value="10">轮次 10</option>
+                        <option value="9">轮次 9</option>
+                        <option value="8">轮次 8</option>
+                        <option value="7">轮次 7</option>
+                        <option value="6">轮次 6</option>
+                        <option value="5">轮次 5</option>
+                        <option value="4">轮次 4</option>
+                        <option value="3">轮次 3</option>
+                        <option value="2">轮次 2</option>
+                        <option value="1">轮次 1</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>对比维度</label>
+                    <div class="dimension-checkboxes">
+                        <label><input type="checkbox" class="dimension-checkbox" value="communication" checked> 通信压缩</label>
+                        <label><input type="checkbox" class="dimension-checkbox" value="adaptive" checked> 自适应迭代</label>
+                        <label><input type="checkbox" class="dimension-checkbox" value="personalization" checked> 个性化权重</label>
+                        <label><input type="checkbox" class="dimension-checkbox" value="recommendation" checked> 推荐效果</label>
+                    </div>
+                </div>
+                
+                <button id="generate-comparison-btn" class="btn btn-primary" style="width: 100%; margin-top: 15px;">生成综合对比</button>
+            </aside>
+
+            <!-- 主内容 -->
+            <div class="main-content">
+                <h2>综合对比</h2>
+                
+                <!-- 系统性能概览 -->
+                <section class="grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="avg-compression">0%</div>
+                        <div class="stat-label">平均压缩比例</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avg-tau">0</div>
+                        <div class="stat-label">平均τ*</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avg-personalization-accuracy">0%</div>
+                        <div class="stat-label">平均个性化准确率</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avg-recommendation-score">0</div>
+                        <div class="stat-label">平均推荐评分</div>
+                    </div>
+                </section>
+
+                <!-- 训练轮次对比 -->
+                <section class="card">
+                    <h3>训练轮次对比</h3>
+                    <div class="chart-container">
+                        <canvas id="round-comparison-chart"></canvas>
+                    </div>
+                </section>
+
+                <!-- 客户端性能对比 -->
+                <section class="card">
+                    <h3>客户端性能对比</h3>
+                    <div class="chart-container">
+                        <canvas id="client-comparison-chart"></canvas>
+                    </div>
+                </section>
+
+                <!-- 创新点评估 -->
+                <section class="card">
+                    <h3>创新点评估</h3>
+                    <div class="comparison-grid">
+                        <div class="comparison-card">
+                            <h4>通信开销低</h4>
+                            <div class="value">92%</div>
+                            <div class="label">压缩效率</div>
+                        </div>
+                        <div class="comparison-card">
+                            <h4>个性化推荐</h4>
+                            <div class="value">88%</div>
+                            <div class="label">准确率提升</div>
+                        </div>
+                        <div class="comparison-card">
+                            <h4>自适应迭代</h4>
+                            <div class="value">95%</div>
+                            <div class="label">收敛速度</div>
+                        </div>
+                        <div class="comparison-card">
+                            <h4>系统稳定性</h4>
+                            <div class="value">90%</div>
+                            <div class="label">稳定性评分</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 详细对比数据 -->
+                <section class="card">
+                    <h3>详细对比数据</h3>
+                    <div class="table-responsive">
+                        <table class="table" id="detailed-comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>评估维度</th>
+                                    <th>指标名称</th>
+                                    <th>当前系统</th>
+                                    <th>传统联邦学习</th>
+                                    <th>提升幅度</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td rowspan="3">通信压缩</td>
+                                    <td>压缩比例</td>
+                                    <td>92%</td>
+                                    <td>50%</td>
+                                    <td>+42%</td>
+                                </tr>
+                                <tr>
+                                    <td>通信开销</td>
+                                    <td>8.5 MB</td>
+                                    <td>17.2 MB</td>
+                                    <td>-50.6%</td>
+                                </tr>
+                                <tr>
+                                    <td>传输时间</td>
+                                    <td>1.2s</td>
+                                    <td>2.5s</td>
+                                    <td>-52%</td>
+                                </tr>
+                                <tr>
+                                    <td rowspan="3">自适应迭代</td>
+                                    <td>平均τ*</td>
+                                    <td>8.5</td>
+                                    <td>5.0</td>
+                                    <td>+70%</td>
+                                </tr>
+                                <tr>
+                                    <td>收敛轮次</td>
+                                    <td>8</td>
+                                    <td>12</td>
+                                    <td>-33.3%</td>
+                                </tr>
+                                <tr>
+                                    <td>最终准确率</td>
+                                    <td>91.2%</td>
+                                    <td>85.6%</td>
+                                    <td>+5.6%</td>
+                                </tr>
+                                <tr>
+                                    <td rowspan="3">个性化权重</td>
+                                    <td>个性化准确率</td>
+                                    <td>90.5%</td>
+                                    <td>82.3%</td>
+                                    <td>+8.2%</td>
+                                </tr>
+                                <tr>
+                                    <td>全局准确率</td>
+                                    <td>89.2%</td>
+                                    <td>85.6%</td>
+                                    <td>+3.6%</td>
+                                </tr>
+                                <tr>
+                                    <td>权重多样性</td>
+                                    <td>0.85</td>
+                                    <td>0.32</td>
+                                    <td>+165.6%</td>
+                                </tr>
+                                <tr>
+                                    <td rowspan="3">推荐效果</td>
+                                    <td>平均推荐评分</td>
+                                    <td>4.6</td>
+                                    <td>4.2</td>
+                                    <td>+9.5%</td>
+                                </tr>
+                                <tr>
+                                    <td>用户满意度</td>
+                                    <td>89%</td>
+                                    <td>76%</td>
+                                    <td>+13%</td>
+                                </tr>
+                                <tr>
+                                    <td>推荐多样性</td>
+                                    <td>0.78</td>
+                                    <td>0.52</td>
+                                    <td>+50%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 城市旅游消费个性化推荐系统</p>
+        </div>
+    </footer>
+
+    <!-- 页面脚本 -->
+    <script>
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            // 绑定生成对比按钮事件
+            document.getElementById('generate-comparison-btn').addEventListener('click', generateComparison);
+            
+            // 初始生成对比
+            generateComparison();
+        });
+        
+        // 生成综合对比
+        async function generateComparison() {
+            try {
+                // 获取参数
+                const roundSelect = document.getElementById('round-select');
+                const roundNum = parseInt(roundSelect.value);
+                
+                // 获取选中的对比维度
+                const checkedDimensions = document.querySelectorAll('.dimension-checkbox:checked');
+                const dimensions = Array.from(checkedDimensions).map(checkbox => checkbox.value);
+                
+                // 更新系统性能概览
+                updateSystemOverview();
+                
+                // 生成图表
+                generateRoundComparisonChart();
+                generateClientComparisonChart();
+            } catch (error) {
+                console.error('生成综合对比失败:', error);
+            }
+        }
+        
+        // 更新系统性能概览
+        function updateSystemOverview() {
+            document.getElementById('avg-compression').textContent = '92%';
+            document.getElementById('avg-tau').textContent = '8.5';
+            document.getElementById('avg-personalization-accuracy').textContent = '88%';
+            document.getElementById('avg-recommendation-score').textContent = '4.6';
+        }
+        
+        // 生成训练轮次对比图表
+        function generateRoundComparisonChart() {
+            const ctx = document.getElementById('round-comparison-chart').getContext('2d');
+            
+            // 准备数据
+            const rounds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            const compression = [60, 65, 72, 78, 82, 85, 88, 90, 91, 92];
+            const accuracy = [65, 68, 72, 75, 78, 81, 84, 87, 89, 91];
+            const personalization = [62, 66, 70, 74, 78, 81, 83, 85, 87, 88];
+            
+            // 销毁现有图表
+            if (window.roundComparisonChart) {
+                window.roundComparisonChart.destroy();
+            }
+            
+            // 创建新图表
+            window.roundComparisonChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: rounds,
+                    datasets: [
+                        {
+                            label: '压缩比例 (%)',
+                            data: compression,
+                            borderColor: ChartGenerator.getColor(0),
+                            backgroundColor: ChartGenerator.getColor(0, 0.1),
+                            borderWidth: 2,
+                            tension: 0.1
+                        },
+                        {
+                            label: '准确率 (%)',
+                            data: accuracy,
+                            borderColor: ChartGenerator.getColor(1),
+                            backgroundColor: ChartGenerator.getColor(1, 0.1),
+                            borderWidth: 2,
+                            tension: 0.1
+                        },
+                        {
+                            label: '个性化准确率 (%)',
+                            data: personalization,
+                            borderColor: ChartGenerator.getColor(2),
+                            backgroundColor: ChartGenerator.getColor(2, 0.1),
+                            borderWidth: 2,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '训练轮次对比'
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 50,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: '百分比 (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '轮次'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 生成客户端性能对比图表
+        function generateClientComparisonChart() {
+            const ctx = document.getElementById('client-comparison-chart').getContext('2d');
+            
+            // 准备数据
+            const clients = ['客户端 1', '客户端 2', '客户端 3', '客户端 4'];
+            const compression = [90, 92, 93, 91];
+            const tau = [8.2, 8.5, 8.8, 8.4];
+            const personalization = [86, 88, 90, 87];
+            
+            // 销毁现有图表
+            if (window.clientComparisonChart) {
+                window.clientComparisonChart.destroy();
+            }
+            
+            // 创建新图表
+            window.clientComparisonChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: clients,
+                    datasets: [
+                        {
+                            label: '压缩比例 (%)',
+                            data: compression,
+                            backgroundColor: ChartGenerator.getColor(0)
+                        },
+                        {
+                            label: 'τ*',
+                            data: tau,
+                            backgroundColor: ChartGenerator.getColor(1)
+                        },
+                        {
+                            label: '个性化准确率 (%)',
+                            data: personalization,
+                            backgroundColor: ChartGenerator.getColor(2)
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '客户端性能对比'
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 50,
+                            title: {
+                                display: true,
+                                text: '数值'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '客户端'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

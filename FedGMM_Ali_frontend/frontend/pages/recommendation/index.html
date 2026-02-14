@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>推荐展示</title>
+    <!-- 引入CSS样式 -->
+    <link rel="stylesheet" href="../../css/style.css">
+    <!-- 引入Chart.js库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 引入主JavaScript文件 -->
+    <script src="../../js/main.js"></script>
+</head>
+<body>
+    <!-- 头部 -->
+    <header class="header">
+        <div class="container">
+            <h1>城市旅游消费个性化推荐系统</h1>
+        </div>
+    </header>
+
+    <!-- 导航菜单 -->
+    <nav class="nav">
+        <div class="container">
+            <ul>
+                <li><a href="../../index.html">首页</a></li>
+                <li><a href="../communication/index.html">通信压缩分析</a></li>
+                <li><a href="../adaptive/index.html">自适应迭代分析</a></li>
+                <li><a href="../personalization/index.html">个性化权重分析</a></li>
+                <li><a href="index.html" class="active">推荐展示</a></li>
+                <li><a href="../comparison/index.html">综合对比</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="container">
+        <div class="page-layout">
+            <!-- 侧边栏 -->
+            <aside class="sidebar">
+                <h3>参数配置</h3>
+                
+                <div class="form-group">
+                    <label for="city-select">城市选择</label>
+                    <select id="city-select" class="form-control">
+                        <option value="北京">北京</option>
+                        <option value="上海">上海</option>
+                        <option value="广州">广州</option>
+                        <option value="深圳">深圳</option>
+                        <option value="杭州">杭州</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="user-id">用户ID</label>
+                    <input type="number" id="user-id" min="1" max="1000" value="1" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label for="top-k">Top-K</label>
+                    <input type="number" id="top-k" min="1" max="10" value="5" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label for="round-select">训练轮次</label>
+                    <select id="round-select" class="form-control">
+                        <option value="10">轮次 10</option>
+                        <option value="9">轮次 9</option>
+                        <option value="8">轮次 8</option>
+                        <option value="7">轮次 7</option>
+                        <option value="6">轮次 6</option>
+                        <option value="5">轮次 5</option>
+                        <option value="4">轮次 4</option>
+                        <option value="3">轮次 3</option>
+                        <option value="2">轮次 2</option>
+                        <option value="1">轮次 1</option>
+                    </select>
+                </div>
+                
+                <button id="generate-btn" class="btn btn-primary" style="width: 100%; margin-top: 15px;">生成推荐</button>
+            </aside>
+
+            <!-- 主内容 -->
+            <div class="main-content">
+                <h2>推荐展示</h2>
+                
+                <!-- 推荐结果 -->
+                <section id="recommendation-result" class="card">
+                    <h3>个性化推荐结果</h3>
+                    <div class="loading-container" id="loading-container">
+                        <div class="loading"></div>
+                    </div>
+                    <div id="recommendation-content" style="display: none;">
+                        <div class="recommendation-header">
+                            <h4>城市: <span id="recommendation-city">北京</span></h4>
+                            <h4>用户ID: <span id="recommendation-user-id">1</span></h4>
+                            <h4>Top-K: <span id="recommendation-top-k">5</span></h4>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table recommendation-table" id="recommendation-table">
+                                <thead>
+                                    <tr>
+                                        <th class="rank-column">排名</th>
+                                        <th>景点名称</th>
+                                        <th>类别</th>
+                                        <th>评分</th>
+                                        <th>价格</th>
+                                        <th>热度</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- 推荐结果将通过JavaScript动态填充 -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="export-button">
+                            <button id="export-recommendation-btn" class="btn btn-secondary">导出为CSV</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 推荐结果可视化 -->
+                <section class="card">
+                    <h3>推荐结果可视化</h3>
+                    <div class="chart-container">
+                        <canvas id="recommendation-chart"></canvas>
+                    </div>
+                </section>
+
+                <!-- 多城市对比 -->
+                <section class="card">
+                    <h3>多城市对比</h3>
+                    <div class="form-group">
+                        <label>选择要对比的城市</label>
+                        <div class="city-checkboxes">
+                            <label><input type="checkbox" class="city-checkbox" value="北京" checked> 北京</label>
+                            <label><input type="checkbox" class="city-checkbox" value="上海" checked> 上海</label>
+                            <label><input type="checkbox" class="city-checkbox" value="广州"> 广州</label>
+                            <label><input type="checkbox" class="city-checkbox" value="深圳"> 深圳</label>
+                            <label><input type="checkbox" class="city-checkbox" value="杭州"> 杭州</label>
+                        </div>
+                    </div>
+                    <button id="compare-btn" class="btn btn-primary">生成对比</button>
+                    
+                    <div id="comparison-result" style="margin-top: 20px;">
+                        <!-- 对比结果将通过JavaScript动态填充 -->
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 城市旅游消费个性化推荐系统</p>
+        </div>
+    </footer>
+
+    <!-- 页面脚本 -->
+    <script>
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            // 绑定生成推荐按钮事件
+            document.getElementById('generate-btn').addEventListener('click', generateRecommendation);
+            
+            // 绑定导出推荐按钮事件
+            document.getElementById('export-recommendation-btn').addEventListener('click', exportRecommendation);
+            
+            // 绑定对比按钮事件
+            document.getElementById('compare-btn').addEventListener('click', generateComparison);
+            
+            // 初始生成推荐
+            generateRecommendation();
+        });
+        
+        // 生成推荐
+        async function generateRecommendation() {
+            try {
+                // 获取参数
+                const city = document.getElementById('city-select').value;
+                const userId = parseInt(document.getElementById('user-id').value);
+                const topK = parseInt(document.getElementById('top-k').value);
+                const round = parseInt(document.getElementById('round-select').value);
+                
+                // 显示加载状态
+                document.getElementById('loading-container').style.display = 'flex';
+                document.getElementById('recommendation-content').style.display = 'none';
+                
+                // 加载数据
+                const data = await DataLoader.loadRecommendationData(city, userId, topK, round);
+                
+                // 更新推荐结果
+                updateRecommendationResult(data);
+                
+                // 生成推荐结果可视化
+                generateRecommendationChart(data.recommendations);
+                
+                // 隐藏加载状态
+                document.getElementById('loading-container').style.display = 'none';
+                document.getElementById('recommendation-content').style.display = 'block';
+            } catch (error) {
+                console.error('生成推荐失败:', error);
+                document.getElementById('loading-container').innerHTML = '<div class="error">生成推荐失败</div>';
+            }
+        }
+        
+        // 更新推荐结果
+        function updateRecommendationResult(data) {
+            // 更新头部信息
+            document.getElementById('recommendation-city').textContent = data.city;
+            document.getElementById('recommendation-user-id').textContent = data.user_id;
+            document.getElementById('recommendation-top-k').textContent = data.top_k;
+            
+            // 更新表格
+            const tableBody = document.querySelector('#recommendation-table tbody');
+            
+            if (data.recommendations.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center">没有推荐结果</td></tr>';
+                return;
+            }
+            
+            const rows = data.recommendations.map(item => `
+                <tr>
+                    <td class="rank-column">${item.rank}</td>
+                    <td>${item.name}</td>
+                    <td>${item.category}</td>
+                    <td>${item.score}</td>
+                    <td>${item.price}</td>
+                    <td>${item.popularity}</td>
+                </tr>
+            `).join('');
+            
+            tableBody.innerHTML = rows;
+        }
+        
+        // 生成推荐结果可视化
+        function generateRecommendationChart(data) {
+            const ctx = document.getElementById('recommendation-chart').getContext('2d');
+            
+            if (data.length === 0) {
+                ctx.canvas.parentNode.innerHTML = '<div class="info">没有数据可显示</div>';
+                return;
+            }
+            
+            // 准备数据
+            const labels = data.map(item => item.name);
+            const scores = data.map(item => item.score);
+            const popularity = data.map(item => item.popularity);
+            
+            // 销毁现有图表
+            if (window.recommendationChart) {
+                window.recommendationChart.destroy();
+            }
+            
+            // 创建新图表
+            window.recommendationChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '评分',
+                            data: scores,
+                            backgroundColor: ChartGenerator.getColor(0),
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: '热度',
+                            data: popularity,
+                            backgroundColor: ChartGenerator.getColor(1),
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '推荐结果评分和热度'
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: '评分'
+                            },
+                            min: 0,
+                            max: 5
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: '热度'
+                            },
+                            min: 0,
+                            max: 100,
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 生成多城市对比
+        async function generateComparison() {
+            try {
+                // 获取选中的城市
+                const checkedBoxes = document.querySelectorAll('.city-checkbox:checked');
+                const cities = Array.from(checkedBoxes).map(checkbox => checkbox.value);
+                
+                if (cities.length < 2) {
+                    alert('请至少选择两个城市进行对比');
+                    return;
+                }
+                
+                // 获取其他参数
+                const userId = parseInt(document.getElementById('user-id').value);
+                const topK = parseInt(document.getElementById('top-k').value);
+                const round = parseInt(document.getElementById('round-select').value);
+                
+                // 显示加载状态
+                const comparisonResult = document.getElementById('comparison-result');
+                comparisonResult.innerHTML = '<div class="loading-container"><div class="loading"></div></div>';
+                
+                // 加载数据
+                const data = await DataLoader.loadComparisonData(cities, userId, topK, round);
+                
+                // 更新对比结果
+                updateComparisonResult(data);
+            } catch (error) {
+                console.error('生成多城市对比失败:', error);
+                document.getElementById('comparison-result').innerHTML = '<div class="error">生成对比失败</div>';
+            }
+        }
+        
+        // 更新多城市对比结果
+        function updateComparisonResult(data) {
+            const comparisonResult = document.getElementById('comparison-result');
+            
+            if (data.comparisons.length === 0) {
+                comparisonResult.innerHTML = '<div class="info">没有对比数据</div>';
+                return;
+            }
+            
+            let html = '<div class="comparison-tables">';
+            
+            data.comparisons.forEach(comparison => {
+                html += `
+                    <div class="comparison-table-container">
+                        <h4>${comparison.city}</h4>
+                        <table class="table comparison-table">
+                            <thead>
+                                <tr>
+                                    <th class="rank-column">排名</th>
+                                    <th>景点名称</th>
+                                    <th>类别</th>
+                                    <th>评分</th>
+                                    <th>价格</th>
+                                    <th>热度</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                comparison.recommendations.forEach(item => {
+                    html += `
+                        <tr>
+                            <td class="rank-column">${item.rank}</td>
+                            <td>${item.name}</td>
+                            <td>${item.category}</td>
+                            <td>${item.score}</td>
+                            <td>${item.price}</td>
+                            <td>${item.popularity}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            comparisonResult.innerHTML = html;
+        }
+        
+        // 导出推荐结果
+        function exportRecommendation() {
+            const tableBody = document.querySelector('#recommendation-table tbody');
+            const rows = tableBody.querySelectorAll('tr');
+            
+            if (rows.length === 0 || rows[0].querySelector('td').colSpan) {
+                alert('没有数据可导出');
+                return;
+            }
+            
+            const data = Array.from(rows).map(row => {
+                const cells = row.querySelectorAll('td');
+                return {
+                    rank: cells[0].textContent,
+                    name: cells[1].textContent,
+                    category: cells[2].textContent,
+                    score: cells[3].textContent,
+                    price: cells[4].textContent,
+                    popularity: cells[5].textContent
+                };
+            });
+            
+            Utils.generateCSV(data, 'recommendation_data.csv');
+        }
+    </script>
+</body>
+</html>

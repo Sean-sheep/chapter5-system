@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>综合对比</title>
+    <!-- 引入CSS样式 -->
+    <link rel="stylesheet" href="../../css/style.css">
+    <!-- 引入Chart.js库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 引入主JavaScript文件 -->
+    <script src="../../js/main.js"></script>
+</head>
+<body>
+    <!-- 头部 -->
+    <header class="header">
+        <div class="container">
+            <h1>城市旅游消费个性化推荐系统</h1>
+        </div>
+    </header>
+
+    <!-- 导航菜单 -->
+    <nav class="nav">
+        <div class="container">
+            <ul>
+                <li><a href="../../index.html">首页</a></li>
+                <li><a href="../communication/index.html">通信压缩分析</a></li>
+                <li><a href="../adaptive/index.html">自适应迭代分析</a></li>
+                <li><a href="../personalization/index.html">个性化权重分析</a></li>
+                <li><a href="../recommendation/index.html">推荐展示</a></li>
+                <li><a href="index.html" class="active">综合对比</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="container">
+        <!-- 系统概览 -->
+        <section class="card">
+            <h2>系统概览</h2>
+            <div class="grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-clients">3</div>
+                    <div class="stat-label">总客户端数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="total-rounds">50</div>
+                    <div class="stat-label">总训练轮次</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avg-compression-ratio">0.2</div>
+                    <div class="stat-label">平均压缩比例</div>
+                </div>
+                <div class="stat-value" id="avg-tau-value">5</div>
+                <div class="stat-label">平均 τ*</div>
+            </div>
+        </section>
+
+        <!-- 通信压缩与自适应迭代对比 -->
+        <section class="card">
+            <h3>通信压缩与自适应迭代对比</h3>
+            <div class="chart-container">
+                <canvas id="compression-vs-tau-chart"></canvas>
+            </div>
+        </section>
+
+        <!-- 个性化权重与推荐性能对比 -->
+        <section class="card">
+            <h3>个性化权重与推荐性能对比</h3>
+            <div class="chart-container">
+                <canvas id="gamma-vs-performance-chart"></canvas>
+            </div>
+        </section>
+
+        <!-- 城市推荐对比 -->
+        <section class="card">
+            <h3>城市推荐对比</h3>
+            <div class="table-responsive">
+                <table class="table comparison-table" id="city-comparison-table">
+                    <thead>
+                        <tr>
+                            <th>指标</th>
+                            <th class="city-column">东京</th>
+                            <th class="city-column">大阪</th>
+                            <th class="city-column">名古屋</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>平均推荐评分</td>
+                            <td>0.92</td>
+                            <td>0.88</td>
+                            <td>0.90</td>
+                        </tr>
+                        <tr>
+                            <td>推荐生成时间</td>
+                            <td>0.2s</td>
+                            <td>0.18s</td>
+                            <td>0.19s</td>
+                        </tr>
+                        <tr>
+                            <td>个性化程度</td>
+                            <td>高</td>
+                            <td>中</td>
+                            <td>高</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 系统性能分析 -->
+        <section class="card">
+            <h3>系统性能分析</h3>
+            <div class="grid">
+                <div class="comparison-section">
+                    <h4>通信性能</h4>
+                    <div class="comparison-grid">
+                        <div class="comparison-card">
+                            <h5>总通信量</h5>
+                            <div class="value">1.2MB</div>
+                            <div class="label">原始: 6.0MB</div>
+                        </div>
+                        <div class="comparison-card">
+                            <h5>压缩率</h5>
+                            <div class="value">80%</div>
+                            <div class="label">节省通信量</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="comparison-section">
+                    <h4>推荐性能</h4>
+                    <div class="comparison-grid">
+                        <div class="comparison-card">
+                            <h5>平均响应时间</h5>
+                            <div class="value">0.19s</div>
+                            <div class="label">推荐生成时间</div>
+                        </div>
+                        <div class="comparison-card">
+                            <h5>准确率</h5>
+                            <div class="value">85%</div>
+                            <div class="label">推荐准确率</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 创新点展示 -->
+        <section class="card">
+            <h3>创新点展示</h3>
+            <div class="grid">
+                <div class="comparison-card">
+                    <h4>通信开销低</h4>
+                    <p>采用Top-k + 残差反馈的压缩策略，显著降低通信开销</p>
+                    <div class="value">80%</div>
+                    <div class="label">通信量节省</div>
+                </div>
+                
+                <div class="comparison-card">
+                    <h4>个性化推荐</h4>
+                    <p>基于多子模型和客户端混合权重γ，实现个性化推荐</p>
+                    <div class="value">高</div>
+                    <div class="label">个性化程度</div>
+                </div>
+                
+                <div class="comparison-card">
+                    <h4>自适应本地迭代</h4>
+                    <p>聚合时本地迭代次数τ*动态变化，优化训练效果</p>
+                    <div class="value">动态</div>
+                    <div class="label">τ* 调整</div>
+                </div>
+                
+                <div class="comparison-card">
+                    <h4>差分隐私</h4>
+                    <p>基于自适应本地迭代的差分隐私机制，保护用户隐私</p>
+                    <div class="value">ε=0.1</div>
+                    <div class="label">隐私预算</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 城市旅游消费个性化推荐系统</p>
+        </div>
+    </footer>
+
+    <!-- 页面脚本 -->
+    <script>
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            // 生成通信压缩与自适应迭代对比图表
+            generateCompressionVsTauChart();
+            
+            // 生成个性化权重与推荐性能对比图表
+            generateGammaVsPerformanceChart();
+        });
+        
+        // 生成通信压缩与自适应迭代对比图表
+        function generateCompressionVsTauChart() {
+            const ctx = document.getElementById('compression-vs-tau-chart').getContext('2d');
+            
+            // 准备数据
+            const rounds = Array.from({length: 10}, (_, i) => i * 5);
+            const compressionRatios = [0.3, 0.28, 0.25, 0.23, 0.21, 0.2, 0.19, 0.18, 0.17, 0.16];
+            const tauValues = [3, 4, 4, 5, 5, 6, 6, 7, 7, 8];
+            
+            // 销毁现有图表
+            if (window.compressionVsTauChart) {
+                window.compressionVsTauChart.destroy();
+            }
+            
+            // 创建新图表
+            window.compressionVsTauChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: rounds,
+                    datasets: [
+                        {
+                            label: '压缩比例',
+                            data: compressionRatios,
+                            borderColor: 'rgba(52, 152, 219, 1)',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'τ*',
+                            data: tauValues,
+                            borderColor: 'rgba(46, 204, 113, 1)',
+                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '通信压缩比例与 τ* 对比'
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: '压缩比例'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'τ*'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '轮次'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 生成个性化权重与推荐性能对比图表
+        function generateGammaVsPerformanceChart() {
+            const ctx = document.getElementById('gamma-vs-performance-chart').getContext('2d');
+            
+            // 准备数据
+            const cities = ['东京', '大阪', '名古屋'];
+            const gammaValues = [0.6, 0.4, 0.5];
+            const performanceScores = [0.92, 0.88, 0.90];
+            
+            // 销毁现有图表
+            if (window.gammaVsPerformanceChart) {
+                window.gammaVsPerformanceChart.destroy();
+            }
+            
+            // 创建新图表
+            window.gammaVsPerformanceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: cities,
+                    datasets: [
+                        {
+                            label: '个性化权重 γ',
+                            data: gammaValues,
+                            backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: '推荐性能评分',
+                            data: performanceScores,
+                            backgroundColor: 'rgba(46, 204, 113, 0.7)',
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '个性化权重与推荐性能对比'
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: '个性化权重 γ'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: '推荐性能评分'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

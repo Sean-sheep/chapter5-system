@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个性化权重分析</title>
+    <!-- 引入CSS样式 -->
+    <link rel="stylesheet" href="../../css/style.css">
+    <!-- 引入Chart.js库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 引入主JavaScript文件 -->
+    <script src="../../js/main.js"></script>
+</head>
+<body>
+    <!-- 头部 -->
+    <header class="header">
+        <div class="container">
+            <h1>城市旅游消费个性化推荐系统</h1>
+        </div>
+    </header>
+
+    <!-- 导航菜单 -->
+    <nav class="nav">
+        <div class="container">
+            <ul>
+                <li><a href="../../index.html">首页</a></li>
+                <li><a href="../communication/index.html">通信压缩分析</a></li>
+                <li><a href="../adaptive/index.html">自适应迭代分析</a></li>
+                <li><a href="index.html" class="active">个性化权重分析</a></li>
+                <li><a href="../recommendation/index.html">推荐展示</a></li>
+                <li><a href="../comparison/index.html">综合对比</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="container">
+        <div class="page-layout">
+            <!-- 侧边栏 -->
+            <aside class="sidebar">
+                <h3>参数配置</h3>
+                
+                <div class="form-group">
+                    <label for="client-select">客户端选择</label>
+                    <select id="client-select" class="form-control">
+                        <option value="all">全部</option>
+                        <option value="1">客户端 1</option>
+                        <option value="2">客户端 2</option>
+                        <option value="3">客户端 3</option>
+                        <option value="4">客户端 4</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="round-select">轮次选择</label>
+                    <select id="round-select" class="form-control">
+                        <option value="1">轮次 1</option>
+                        <option value="2">轮次 2</option>
+                        <option value="3">轮次 3</option>
+                        <option value="4">轮次 4</option>
+                        <option value="5">轮次 5</option>
+                        <option value="6">轮次 6</option>
+                        <option value="7">轮次 7</option>
+                        <option value="8">轮次 8</option>
+                        <option value="9">轮次 9</option>
+                        <option value="10" selected>轮次 10</option>
+                    </select>
+                </div>
+                
+                <button id="refresh-btn" class="btn btn-primary" style="width: 100%; margin-top: 15px;">刷新数据</button>
+            </aside>
+
+            <!-- 主内容 -->
+            <div class="main-content">
+                <h2>个性化权重分析</h2>
+                
+                <!-- 统计摘要 -->
+                <section class="grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-rounds">0</div>
+                        <div class="stat-label">总轮次</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-clients">0</div>
+                        <div class="stat-label">总客户端</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avg-personalization-accuracy">0%</div>
+                        <div class="stat-label">平均个性化准确率</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avg-global-accuracy">0%</div>
+                        <div class="stat-label">平均全局准确率</div>
+                    </div>
+                </section>
+
+                <!-- γ权重分布图表 -->
+                <section class="card">
+                    <h3>γ 权重分布</h3>
+                    <div class="chart-container">
+                        <canvas id="gamma-distribution-chart"></canvas>
+                    </div>
+                </section>
+
+                <!-- γ权重趋势图表 -->
+                <section class="card">
+                    <h3>γ 权重趋势</h3>
+                    <div class="chart-container">
+                        <canvas id="gamma-trend-chart"></canvas>
+                    </div>
+                </section>
+
+                <!-- 个性化权重数据表 -->
+                <section class="card">
+                    <h3>个性化权重数据</h3>
+                    <div class="table-responsive">
+                        <table class="table" id="personalization-table">
+                            <thead>
+                                <tr>
+                                    <th>轮次</th>
+                                    <th>客户端</th>
+                                    <th>子模型 1 权重</th>
+                                    <th>子模型 2 权重</th>
+                                    <th>子模型 3 权重</th>
+                                    <th>个性化准确率</th>
+                                    <th>全局准确率</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="7" class="text-center">加载中...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="export-button">
+                        <button id="export-btn" class="btn btn-secondary">导出为CSV</button>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 城市旅游消费个性化推荐系统</p>
+        </div>
+    </footer>
+
+    <!-- 页面脚本 -->
+    <script>
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', async () => {
+            // 加载个性化权重数据
+            await loadPersonalizationData();
+            
+            // 绑定刷新按钮事件
+            document.getElementById('refresh-btn').addEventListener('click', loadPersonalizationData);
+            
+            // 绑定导出按钮事件
+            document.getElementById('export-btn').addEventListener('click', exportData);
+        });
+        
+        // 加载个性化权重数据
+        async function loadPersonalizationData() {
+            try {
+                // 获取参数
+                const clientSelect = document.getElementById('client-select');
+                const clientId = clientSelect.value === 'all' ? null : parseInt(clientSelect.value);
+                
+                const roundSelect = document.getElementById('round-select');
+                const roundNum = parseInt(roundSelect.value);
+                
+                // 显示加载状态
+                const tableBody = document.querySelector('#personalization-table tbody');
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center"><div class="loading"></div></td></tr>';
+                
+                // 加载数据
+                const data = await DataLoader.loadPersonalizationData(clientId, roundNum);
+                
+                // 更新统计摘要
+                updateStatistics(data.statistics);
+                
+                // 生成图表
+                generateGammaDistributionChart(data.data);
+                generateGammaTrendChart(data.data);
+                
+                // 更新表格
+                updatePersonalizationTable(data.data);
+            } catch (error) {
+                console.error('加载个性化权重数据失败:', error);
+                const tableBody = document.querySelector('#personalization-table tbody');
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center"><div class="error">加载数据失败</div></td></tr>';
+            }
+        }
+        
+        // 更新统计摘要
+        function updateStatistics(statistics) {
+            document.getElementById('total-rounds').textContent = statistics.total_rounds || 0;
+            document.getElementById('total-clients').textContent = statistics.total_clients || 0;
+            document.getElementById('avg-personalization-accuracy').textContent = statistics.average_personalization_accuracy ? `${(statistics.average_personalization_accuracy * 100).toFixed(2)}%` : '0%';
+            document.getElementById('avg-global-accuracy').textContent = statistics.average_global_accuracy ? `${(statistics.average_global_accuracy * 100).toFixed(2)}%` : '0%';
+        }
+        
+        // 生成γ权重分布图表
+        function generateGammaDistributionChart(data) {
+            const ctx = document.getElementById('gamma-distribution-chart').getContext('2d');
+            
+            // 准备数据
+            const clients = [...new Set(data.map(item => item.client_id))];
+            const submodels = data[0].gamma ? Object.keys(data[0].gamma) : [];
+            
+            const datasets = submodels.map((submodel, index) => {
+                const submodelData = clients.map(client => {
+                    const item = data.find(d => d.client_id === client);
+                    return item && item.gamma ? item.gamma[submodel] : 0;
+                });
+                
+                return {
+                    label: `子模型 ${submodel}`,
+                    data: submodelData,
+                    backgroundColor: ChartGenerator.getColor(index)
+                };
+            });
+            
+            // 销毁现有图表
+            if (window.gammaDistributionChart) {
+                window.gammaDistributionChart.destroy();
+            }
+            
+            // 创建新图表
+            window.gammaDistributionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: clients.map(client => `客户端 ${client}`),
+                    datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'γ 权重分布'
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '权重值'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '客户端'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 生成γ权重趋势图表
+        function generateGammaTrendChart(data) {
+            const ctx = document.getElementById('gamma-trend-chart').getContext('2d');
+            
+            // 准备数据
+            const rounds = [...new Set(data.map(item => item.round))].sort((a, b) => a - b);
+            const clients = [...new Set(data.map(item => item.client_id))];
+            const submodels = data[0].gamma ? Object.keys(data[0].gamma) : [];
+            
+            const datasets = [];
+            
+            // 为每个客户端的每个子模型添加数据
+            clients.forEach((client, clientIndex) => {
+                submodels.forEach((submodel, submodelIndex) => {
+                    const clientSubmodelData = data
+                        .filter(item => item.client_id === client)
+                        .sort((a, b) => a.round - b.round);
+                    
+                    const submodelData = rounds.map(round => {
+                        const item = clientSubmodelData.find(d => d.round === round);
+                        return item && item.gamma ? item.gamma[submodel] : 0;
+                    });
+                    
+                    datasets.push({
+                        label: `客户端 ${client} - 子模型 ${submodel}`,
+                        data: submodelData,
+                        borderColor: ChartGenerator.getColor(clientIndex * submodels.length + submodelIndex),
+                        backgroundColor: ChartGenerator.getColor(clientIndex * submodels.length + submodelIndex, 0.1),
+                        borderWidth: 2,
+                        tension: 0.1
+                    });
+                });
+            });
+            
+            // 销毁现有图表
+            if (window.gammaTrendChart) {
+                window.gammaTrendChart.destroy();
+            }
+            
+            // 创建新图表
+            window.gammaTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: rounds,
+                    datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'γ 权重趋势'
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '权重值'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '轮次'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 更新个性化权重表格
+        function updatePersonalizationTable(data) {
+            const tableBody = document.querySelector('#personalization-table tbody');
+            
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center">没有数据可显示</td></tr>';
+                return;
+            }
+            
+            const rows = data.map(item => `
+                <tr>
+                    <td>${item.round}</td>
+                    <td>${item.client_id}</td>
+                    <td>${item.gamma ? item.gamma['1'].toFixed(3) : '0'}</td>
+                    <td>${item.gamma ? item.gamma['2'].toFixed(3) : '0'}</td>
+                    <td>${item.gamma ? item.gamma['3'].toFixed(3) : '0'}</td>
+                    <td>${item.personalization_accuracy.toFixed(3)}</td>
+                    <td>${item.global_accuracy.toFixed(3)}</td>
+                </tr>
+            `).join('');
+            
+            tableBody.innerHTML = rows;
+        }
+        
+        // 导出数据
+        function exportData() {
+            const tableBody = document.querySelector('#personalization-table tbody');
+            const rows = tableBody.querySelectorAll('tr');
+            
+            if (rows.length === 0 || rows[0].querySelector('td').colSpan) {
+                alert('没有数据可导出');
+                return;
+            }
+            
+            const data = Array.from(rows).map(row => {
+                const cells = row.querySelectorAll('td');
+                return {
+                    round: cells[0].textContent,
+                    client_id: cells[1].textContent,
+                    submodel_1_weight: cells[2].textContent,
+                    submodel_2_weight: cells[3].textContent,
+                    submodel_3_weight: cells[4].textContent,
+                    personalization_accuracy: cells[5].textContent,
+                    global_accuracy: cells[6].textContent
+                };
+            });
+            
+            Utils.generateCSV(data, 'personalization_data.csv');
+        }
+    </script>
+</body>
+</html>

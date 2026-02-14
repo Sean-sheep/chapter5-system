@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自适应迭代分析</title>
+    <!-- 引入CSS样式 -->
+    <link rel="stylesheet" href="../../css/style.css">
+    <!-- 引入Chart.js库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 引入主JavaScript文件 -->
+    <script src="../../js/main.js"></script>
+</head>
+<body>
+    <!-- 头部 -->
+    <header class="header">
+        <div class="container">
+            <h1>城市旅游消费个性化推荐系统</h1>
+        </div>
+    </header>
+
+    <!-- 导航菜单 -->
+    <nav class="nav">
+        <div class="container">
+            <ul>
+                <li><a href="../../index.html">首页</a></li>
+                <li><a href="../communication/index.html">通信压缩分析</a></li>
+                <li><a href="index.html" class="active">自适应迭代分析</a></li>
+                <li><a href="../personalization/index.html">个性化权重分析</a></li>
+                <li><a href="../recommendation/index.html">推荐展示</a></li>
+                <li><a href="../comparison/index.html">综合对比</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="container">
+        <div class="page-layout">
+            <!-- 侧边栏 -->
+            <aside class="sidebar">
+                <h3>参数配置</h3>
+                
+                <div class="form-group">
+                    <label for="client-select">客户端选择</label>
+                    <select id="client-select" class="form-control">
+                        <option value="all">全部</option>
+                        <option value="0">客户端 0</option>
+                        <option value="1">客户端 1</option>
+                        <option value="2">客户端 2</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="round-range">轮次范围</label>
+                    <div class="range-inputs">
+                        <input type="number" id="round-start" min="0" max="100" value="0" class="form-control">
+                        <span>至</span>
+                        <input type="number" id="round-end" min="0" max="100" value="50" class="form-control">
+                    </div>
+                </div>
+                
+                <button id="refresh-btn" class="btn btn-primary" style="width: 100%; margin-top: 15px;">刷新数据</button>
+            </aside>
+
+            <!-- 主内容 -->
+            <div class="main-content">
+                <h2>自适应迭代分析</h2>
+                
+                <!-- τ* 趋势图表 -->
+                <section class="card">
+                    <h3>τ* 随轮次变化</h3>
+                    <div class="chart-container">
+                        <canvas id="tau-trend-chart"></canvas>
+                    </div>
+                </section>
+
+                <!-- τ* 统计数据 -->
+                <section class="card">
+                    <h3>τ* 统计数据</h3>
+                    <div class="table-responsive">
+                        <table class="table" id="tau-table">
+                            <thead>
+                                <tr>
+                                    <th>轮次</th>
+                                    <th>客户端</th>
+                                    <th>τ*</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="3" class="text-center">加载中...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="export-button">
+                        <button id="export-btn" class="btn btn-secondary">导出为CSV</button>
+                    </div>
+                </section>
+
+                <!-- τ* 分布分析 -->
+                <section class="card">
+                    <h3>τ* 分布分析</h3>
+                    <div class="grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="avg-tau">0</div>
+                            <div class="stat-label">平均 τ*</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="min-tau">0</div>
+                            <div class="stat-label">最小 τ*</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="max-tau">0</div>
+                            <div class="stat-label">最大 τ*</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="std-tau">0</div>
+                            <div class="stat-label">标准差</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 城市旅游消费个性化推荐系统</p>
+        </div>
+    </footer>
+
+    <!-- 页面脚本 -->
+    <script>
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', async () => {
+            // 加载自适应迭代数据
+            await loadAdaptiveData();
+            
+            // 绑定刷新按钮事件
+            document.getElementById('refresh-btn').addEventListener('click', loadAdaptiveData);
+            
+            // 绑定导出按钮事件
+            document.getElementById('export-btn').addEventListener('click', exportData);
+        });
+        
+        // 加载自适应迭代数据
+        async function loadAdaptiveData() {
+            try {
+                // 获取参数
+                const clientSelect = document.getElementById('client-select');
+                const clientId = clientSelect.value === 'all' ? null : parseInt(clientSelect.value);
+                
+                const roundStart = parseInt(document.getElementById('round-start').value);
+                const roundEnd = parseInt(document.getElementById('round-end').value);
+                const roundRange = [roundStart, roundEnd];
+                
+                // 显示加载状态
+                const tableBody = document.querySelector('#tau-table tbody');
+                tableBody.innerHTML = '<tr><td colspan="3" class="text-center"><div class="loading"></div></td></tr>';
+                
+                // 加载数据
+                const data = await DataLoader.loadAdaptiveIterationData(clientId, roundRange);
+                
+                // 生成 τ* 趋势图表
+                generateTauTrendChart(data.data);
+                
+                // 更新 τ* 表格
+                updateTauTable(data.data);
+                
+                // 更新 τ* 分布分析
+                updateTauDistribution(data.data);
+            } catch (error) {
+                console.error('加载自适应迭代数据失败:', error);
+                const tableBody = document.querySelector('#tau-table tbody');
+                tableBody.innerHTML = '<tr><td colspan="3" class="text-center"><div class="error">加载数据失败</div></td></tr>';
+            }
+        }
+        
+        // 生成 τ* 趋势图表
+        function generateTauTrendChart(data) {
+            const ctx = document.getElementById('tau-trend-chart').getContext('2d');
+            
+            // 准备数据
+            const rounds = [...new Set(data.map(item => item.round))].sort((a, b) => a - b);
+            const clients = [...new Set(data.map(item => item.client_id))];
+            
+            const datasets = clients.map((client, index) => {
+                const clientData = data.filter(item => item.client_id === client);
+                const tauValues = rounds.map(round => {
+                    const item = clientData.find(d => d.round === round);
+                    return item ? item.tau_star : null;
+                });
+                
+                return {
+                    label: `客户端 ${client}`,
+                    data: tauValues,
+                    borderColor: ChartGenerator.getColor(index),
+                    backgroundColor: ChartGenerator.getColor(index, 0.1),
+                    borderWidth: 2,
+                    tension: 0.1
+                };
+            });
+            
+            // 销毁现有图表
+            if (window.tauTrendChart) {
+                window.tauTrendChart.destroy();
+            }
+            
+            // 创建新图表
+            window.tauTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: rounds,
+                    datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'τ* 随轮次变化'
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'τ* 值'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '轮次'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 更新 τ* 表格
+        function updateTauTable(data) {
+            const tableBody = document.querySelector('#tau-table tbody');
+            
+            if (data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="3" class="text-center">没有数据可显示</td></tr>';
+                return;
+            }
+            
+            const rows = data.map(item => `
+                <tr>
+                    <td>${item.round}</td>
+                    <td>${item.client_id}</td>
+                    <td>${item.tau_star}</td>
+                </tr>
+            `).join('');
+            
+            tableBody.innerHTML = rows;
+        }
+        
+        // 更新 τ* 分布分析
+        function updateTauDistribution(data) {
+            if (data.length === 0) {
+                return;
+            }
+            
+            const tauValues = data.map(item => item.tau_star);
+            const avgTau = tauValues.reduce((sum, val) => sum + val, 0) / tauValues.length;
+            const minTau = Math.min(...tauValues);
+            const maxTau = Math.max(...tauValues);
+            const variance = tauValues.reduce((sum, val) => sum + Math.pow(val - avgTau, 2), 0) / tauValues.length;
+            const stdTau = Math.sqrt(variance);
+            
+            document.getElementById('avg-tau').textContent = avgTau.toFixed(2);
+            document.getElementById('min-tau').textContent = minTau;
+            document.getElementById('max-tau').textContent = maxTau;
+            document.getElementById('std-tau').textContent = stdTau.toFixed(2);
+        }
+        
+        // 导出数据
+        function exportData() {
+            const tableBody = document.querySelector('#tau-table tbody');
+            const rows = tableBody.querySelectorAll('tr');
+            
+            if (rows.length === 0 || rows[0].querySelector('td').colSpan) {
+                alert('没有数据可导出');
+                return;
+            }
+            
+            const data = Array.from(rows).map(row => {
+                const cells = row.querySelectorAll('td');
+                return {
+                    round: cells[0].textContent,
+                    client_id: cells[1].textContent,
+                    tau_star: cells[2].textContent
+                };
+            });
+            
+            Utils.generateCSV(data, 'tau_data.csv');
+        }
+    </script>
+</body>
+</html>
