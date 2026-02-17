@@ -10,6 +10,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- 引入主JavaScript文件 -->
     <script src="js/main.js"></script>
+    <!-- 引入反馈系统JavaScript文件 -->
+    <script src="js/feedback.js"></script>
 </head>
 <body>
     <!-- 头部 -->
@@ -29,6 +31,7 @@
                 <li><a href="pages/personalization/index.html">个性化权重分析</a></li>
                 <li><a href="pages/recommendation/index.html">推荐展示</a></li>
                 <li><a href="pages/comparison/index.html">综合对比</a></li>
+                <li><a href="pages/training/index.html">训练参数输入</a></li>
             </ul>
         </div>
     </nav>
@@ -59,6 +62,10 @@
         <!-- 系统状态 -->
         <section class="system-status">
             <h3>系统状态</h3>
+            <div class="system-status-item">
+                <span class="label">连接状态</span>
+                <span class="value connection-status" id="connection-status"></span>
+            </div>
             <div class="system-status-item">
                 <span class="label">数据加载状态</span>
                 <span class="value" id="data-loaded">检查中...</span>

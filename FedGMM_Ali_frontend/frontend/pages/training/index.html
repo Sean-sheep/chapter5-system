@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>训练参数输入 - 城市旅游消费个性化推荐系统</title>
+    <!-- 引入CSS样式 -->
+    <link rel="stylesheet" href="../../css/style.css">
+    <!-- 引入Chart.js库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 引入主JavaScript文件 -->
+    <script src="../../js/main.js"></script>
+</head>
+<body>
+    <!-- 头部 -->
+    <header class="header">
+        <div class="container">
+            <h1>城市旅游消费个性化推荐系统</h1>
+        </div>
+    </header>
+
+    <!-- 导航菜单 -->
+    <nav class="nav">
+        <div class="container">
+            <ul>
+                <li><a href="../../index.html">首页</a></li>
+                <li><a href="../communication/index.html">通信压缩分析</a></li>
+                <li><a href="../adaptive/index.html">自适应迭代分析</a></li>
+                <li><a href="../personalization/index.html">个性化权重分析</a></li>
+                <li><a href="../recommendation/index.html">推荐展示</a></li>
+                <li><a href="../comparison/index.html">综合对比</a></li>
+                <li><a href="index.html" class="active">训练参数输入</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="container">
+        <!-- 页面标题 -->
+        <section class="card">
+            <h2>训练参数输入</h2>
+            <p>请设置联邦学习模型的训练参数，系统将根据这些参数执行训练过程并生成相应的分析结果。</p>
+        </section>
+
+        <!-- 训练参数表单 -->
+        <section class="card">
+            <h2>参数设置</h2>
+            <form id="training-form">
+                <div class="form-grid">
+                    <!-- 基本参数 -->
+                    <div class="form-group">
+                        <label for="num-clients">客户端数量</label>
+                        <input type="number" id="num-clients" name="num_clients" min="1" max="100" value="5" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="num-rounds">训练轮次</label>
+                        <input type="number" id="num-rounds" name="num_rounds" min="1" max="1000" value="100" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="batch-size">批次大小</label>
+                        <input type="number" id="batch-size" name="batch_size" min="1" max="1024" value="32" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="learning-rate">学习率</label>
+                        <input type="number" id="learning-rate" name="learning_rate" min="0.0001" max="1" step="0.0001" value="0.01" required>
+                    </div>
+
+                    <!-- 通信压缩参数 -->
+                    <div class="form-group">
+                        <label for="compression-type">压缩类型</label>
+                        <select id="compression-type" name="compression_type" required>
+                            <option value="topk">Top-K</option>
+                            <option value="random">随机压缩</option>
+                            <option value="none">无压缩</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="compression-ratio">压缩率</label>
+                        <input type="number" id="compression-ratio" name="compression_ratio" min="0.01" max="1" step="0.01" value="0.1" required>
+                    </div>
+
+                    <!-- 个性化参数 -->
+                    <div class="form-group">
+                        <label for="num-submodels">子模型数量</label>
+                        <input type="number" id="num-submodels" name="num_submodels" min="1" max="10" value="3" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gamma-regularization">γ正则化系数</label>
+                        <input type="number" id="gamma-regularization" name="gamma_regularization" min="0.0001" max="1" step="0.0001" value="0.001" required>
+                    </div>
+
+                    <!-- 自适应迭代参数 -->
+                    <div class="form-group">
+                        <label for="tau-initial">初始τ值</label>
+                        <input type="number" id="tau-initial" name="tau_initial" min="1" max="100" value="10" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tau-adaptive">是否启用自适应τ</label>
+                        <select id="tau-adaptive" name="tau_adaptive" required>
+                            <option value="true">是</option>
+                            <option value="false">否</option>
+                        </select>
+                    </div>
+
+                    <!-- 差分隐私参数 -->
+                    <div class="form-group">
+                        <label for="use-dp">是否启用差分隐私</label>
+                        <select id="use-dp" name="use_dp" required>
+                            <option value="false">否</option>
+                            <option value="true">是</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="epsilon">隐私预算ε</label>
+                        <input type="number" id="epsilon" name="epsilon" min="0.1" max="100" step="0.1" value="10" required>
+                    </div>
+                </div>
+
+                <!-- 提交按钮 -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">开始训练</button>
+                    <button type="reset" class="btn btn-secondary">重置参数</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- 训练状态 -->
+        <section class="card">
+            <h2>训练状态</h2>
+            <div id="training-status">
+                <p>等待训练开始...</p>
+            </div>
+        </section>
+
+        <!-- 训练结果预览 -->
+        <section class="card" id="training-results" style="display: none;">
+            <h2>训练结果预览</h2>
+            <div id="results-content">
+                <!-- 结果将通过JavaScript动态填充 -->
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 城市旅游消费个性化推荐系统</p>
+        </div>
+    </footer>
+
+    <!-- 页面脚本 -->
+    <script>
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            // 初始化表单
+            initTrainingForm();
+        });
+
+        // 初始化训练表单
+        function initTrainingForm() {
+            const form = document.getElementById('training-form');
+            const trainingStatus = document.getElementById('training-status');
+            const trainingResults = document.getElementById('training-results');
+            const resultsContent = document.getElementById('results-content');
+
+            // 表单提交处理
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                // 显示加载状态
+                trainingStatus.innerHTML = '<div class="loading-container"><div class="loading"></div><span style="margin-left: 10px;">正在启动训练...</span></div>';
+                trainingResults.style.display = 'none';
+
+                // 获取表单数据
+                const formData = new FormData(form);
+                const params = {};
+                formData.forEach((value, key) => {
+                    // 转换数值类型
+                    if (!isNaN(value) && value !== '') {
+                        params[key] = parseFloat(value);
+                    } else {
+                        params[key] = value;
+                    }
+                });
+
+                try {
+                    // 调用后端API启动训练
+                    const trainResponse = await startTraining(params);
+                    
+                    if (trainResponse.success) {
+                        // 开始轮询训练状态
+                        startTrainingStatusPolling(trainResponse.task_info.log_file);
+                    } else {
+                        throw new Error(trainResponse.message || '启动训练失败');
+                    }
+                } catch (error) {
+                    console.error('训练失败:', error);
+                    trainingStatus.innerHTML = `<div class="error">训练失败: ${error.message}</div>`;
+                }
+            });
+        }
+
+        // 启动训练
+        async function startTraining(params) {
+            // 映射前端参数到后端API参数
+            const apiParams = {
+                city: 'Tokyo', // 默认城市
+                rounds: params.num_rounds || 50,
+                gamma: params.gamma_regularization || 0.1,
+                tau: params.tau_initial || 0.5,
+                compression: params.compression_type !== 'none',
+                adaptive: params.tau_adaptive === 'true',
+                personalization: true // 默认为true
+            };
+
+            // 调用后端API
+            const response = await fetch('http://localhost:5001/api/system/train/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(apiParams)
+            });
+
+            if (!response.ok) {
+                throw new Error(`API请求失败: ${response.status}`);
+            }
+
+            return await response.json();
+        }
+
+        // 轮询训练状态
+        function startTrainingStatusPolling(logFile) {
+            const trainingStatus = document.getElementById('training-status');
+            const trainingResults = document.getElementById('training-results');
+            const resultsContent = document.getElementById('results-content');
+
+            let pollingInterval;
+
+            // 开始轮询
+            pollingInterval = setInterval(async () => {
+                try {
+                    // 调用后端API获取训练状态
+                    const statusResponse = await fetch('http://localhost:5001/api/system/train/status', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ log_file: logFile })
+                    });
+
+                    if (!statusResponse.ok) {
+                        throw new Error(`API请求失败: ${statusResponse.status}`);
+                    }
+
+                    const statusData = await statusResponse.json();
+
+                    if (statusData.success) {
+                        // 更新训练状态
+                        updateTrainingStatus(statusData);
+
+                        // 检查训练是否完成
+                        if (statusData.status === 'completed' || statusData.status === 'error') {
+                            // 停止轮询
+                            clearInterval(pollingInterval);
+
+                            // 显示训练结果
+                            if (statusData.status === 'completed') {
+                                displayTrainingResults(statusData);
+                            }
+                        }
+                    } else {
+                        throw new Error(statusData.message || '获取训练状态失败');
+                    }
+                } catch (error) {
+                    console.error('获取训练状态失败:', error);
+                    clearInterval(pollingInterval);
+                    trainingStatus.innerHTML = `<div class="error">获取训练状态失败: ${error.message}</div>`;
+                }
+            }, 3000); // 每3秒轮询一次
+        }
+
+        // 更新训练状态
+        function updateTrainingStatus(statusData) {
+            const trainingStatus = document.getElementById('training-status');
+
+            let statusHTML = '';
+
+            switch (statusData.status) {
+                case 'running':
+                    statusHTML = `
+                        <div class="loading-container">
+                            <div class="loading"></div>
+                            <span style="margin-left: 10px;">训练中...</span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${statusData.progress}%;"></div>
+                            </div>
+                            <span class="progress-text">${statusData.progress}%</span>
+                        </div>
+                        <div class="info">
+                            <p>当前状态: 训练进行中</p>
+                            <p>进度: ${statusData.progress}%</p>
+                        </div>
+                    `;
+                    break;
+                case 'completed':
+                    statusHTML = `
+                        <div class="success">训练完成！</div>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 100%;"></div>
+                            </div>
+                            <span class="progress-text">100%</span>
+                        </div>
+                    `;
+                    break;
+                case 'error':
+                    statusHTML = `
+                        <div class="error">训练出错！</div>
+                        <div class="error-message">${statusData.error_message}</div>
+                    `;
+                    break;
+                default:
+                    statusHTML = `<div class="info">当前状态: ${statusData.status}</div>`;
+            }
+
+            // 添加日志内容预览
+            if (statusData.log_content) {
+                statusHTML += `
+                    <div class="log-preview">
+                        <h3>训练日志</h3>
+                        <pre>${statusData.log_content}</pre>
+                    </div>
+                `;
+            }
+
+            trainingStatus.innerHTML = statusHTML;
+        }
+
+        // 显示训练结果
+        function displayTrainingResults(statusData) {
+            const trainingResults = document.getElementById('training-results');
+            const resultsContent = document.getElementById('results-content');
+
+            // 生成结果内容
+            const resultsHTML = `
+                <div class="success">训练已成功完成！</div>
+                <h3>训练结果</h3>
+                <div class="grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${statusData.progress}%</div>
+                        <div class="stat-label">完成进度</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${statusData.status}</div>
+                        <div class="stat-label">训练状态</div>
+                    </div>
+                </div>
+                <div class="info">
+                    <p>训练完成后，您可以在以下页面查看详细分析结果：</p>
+                    <ul>
+                        <li><a href="../communication/index.html">通信压缩分析</a></li>
+                        <li><a href="../adaptive/index.html">自适应迭代分析</a></li>
+                        <li><a href="../personalization/index.html">个性化权重分析</a></li>
+                        <li><a href="../comparison/index.html">综合对比</a></li>
+                    </ul>
+                </div>
+            `;
+
+            resultsContent.innerHTML = resultsHTML;
+            trainingResults.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

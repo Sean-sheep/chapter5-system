@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>反馈系统测试</title>
+    <!-- 引入CSS样式 -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- 引入Chart.js库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 引入主JavaScript文件 -->
+    <script src="js/main.js"></script>
+    <!-- 引入反馈系统JavaScript文件 -->
+    <script src="js/feedback.js"></script>
+    <style>
+        .test-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .test-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .test-result {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部 -->
+    <header class="header">
+        <div class="container">
+            <h1>反馈系统测试</h1>
+        </div>
+    </header>
+
+    <!-- 导航菜单 -->
+    <nav class="nav">
+        <div class="container">
+            <ul>
+                <li><a href="index.html">首页</a></li>
+                <li><a href="test-feedback.html" class="active">反馈系统测试</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="container">
+        <!-- 测试说明 -->
+        <section class="card">
+            <h2>测试说明</h2>
+            <p>本页面用于测试反馈系统的各种功能，包括：</p>
+            <ul>
+                <li>连接状态显示</li>
+                <li>成功/错误/警告/信息消息提示</li>
+                <li>任务管理（创建、开始、更新进度、完成、失败）</li>
+                <li>加载状态显示</li>
+                <li>确认对话框</li>
+            </ul>
+            <p>点击下方按钮进行测试，观察右侧弹出的反馈信息。</p>
+        </section>
+
+        <!-- 连接状态测试 -->
+        <section class="test-section">
+            <h3>连接状态测试</h3>
+            <div class="test-buttons">
+                <button class="btn btn-primary" onclick="testConnectionStatus()">检查连接状态</button>
+            </div>
+            <div class="test-result">
+                <h4>测试结果：</h4>
+                <p>连接状态将显示在页面顶部的系统状态区域，以及右侧的反馈容器中。</p>
+            </div>
+        </section>
+
+        <!-- 消息提示测试 -->
+        <section class="test-section">
+            <h3>消息提示测试</h3>
+            <div class="test-buttons">
+                <button class="btn btn-success" onclick="testSuccessMessage()">测试成功消息</button>
+                <button class="btn btn-danger" onclick="testErrorMessage()">测试错误消息</button>
+                <button class="btn btn-warning" onclick="testWarningMessage()">测试警告消息</button>
+                <button class="btn btn-info" onclick="testInfoMessage()">测试信息消息</button>
+            </div>
+            <div class="test-result">
+                <h4>测试结果：</h4>
+                <p>消息将从右侧滑入显示，并在指定时间后自动消失。</p>
+            </div>
+        </section>
+
+        <!-- 任务管理测试 -->
+        <section class="test-section">
+            <h3>任务管理测试</h3>
+            <div class="test-buttons">
+                <button class="btn btn-primary" onclick="testTaskManagement()">测试任务管理</button>
+            </div>
+            <div class="test-result">
+                <h4>测试结果：</h4>
+                <p>任务将显示在右侧的反馈容器中，包括任务状态、进度条等信息。</p>
+            </div>
+        </section>
+
+        <!-- 加载状态测试 -->
+        <section class="test-section">
+            <h3>加载状态测试</h3>
+            <div class="test-buttons">
+                <button class="btn btn-primary" onclick="testLoadingStatus()">测试加载状态</button>
+            </div>
+            <div id="loading-test-area" class="test-result">
+                <h4>测试区域：</h4>
+                <p>点击上方按钮后，此区域将显示加载状态。</p>
+            </div>
+        </section>
+
+        <!-- 确认对话框测试 -->
+        <section class="test-section">
+            <h3>确认对话框测试</h3>
+            <div class="test-buttons">
+                <button class="btn btn-primary" onclick="testConfirmDialog()">测试确认对话框</button>
+            </div>
+            <div class="test-result">
+                <h4>测试结果：</h4>
+                <p>点击上方按钮后，将弹出确认对话框，测试确认和取消功能。</p>
+            </div>
+        </section>
+
+        <!-- 系统状态 -->
+        <section class="system-status">
+            <h3>系统状态</h3>
+            <div class="system-status-item">
+                <span class="label">连接状态</span>
+                <span class="value connection-status" id="connection-status"></span>
+            </div>
+            <div class="system-status-item">
+                <span class="label">系统时间</span>
+                <span class="value" id="system-time"></span>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 反馈系统测试</p>
+        </div>
+    </footer>
+
+    <!-- 测试脚本 -->
+    <script>
+        // 更新系统时间
+        function updateSystemTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('zh-CN');
+            document.getElementById('system-time').textContent = timeString;
+        }
+
+        // 每秒更新系统时间
+        setInterval(updateSystemTime, 1000);
+        updateSystemTime();
+
+        // 测试连接状态
+        function testConnectionStatus() {
+            FeedbackManager.checkConnectionStatus();
+            FeedbackManager.showInfo('连接状态检查已触发，请查看系统状态区域。');
+        }
+
+        // 测试成功消息
+        function testSuccessMessage() {
+            FeedbackManager.showSuccess('这是一条成功消息示例', {
+                title: '操作成功',
+                duration: 3000
+            });
+        }
+
+        // 测试错误消息
+        function testErrorMessage() {
+            FeedbackManager.showError('这是一条错误消息示例', {
+                title: '操作失败',
+                duration: 5000
+            });
+        }
+
+        // 测试警告消息
+        function testWarningMessage() {
+            FeedbackManager.showWarning('这是一条警告消息示例', {
+                title: '警告',
+                duration: 4000
+            });
+        }
+
+        // 测试信息消息
+        function testInfoMessage() {
+            FeedbackManager.showInfo('这是一条信息消息示例', {
+                title: '信息',
+                duration: 3000
+            });
+        }
+
+        // 测试任务管理
+        function testTaskManagement() {
+            // 创建任务
+            const taskId = FeedbackManager.createTask('test-task-1', {
+                title: '测试任务',
+                description: '这是一个测试任务，用于测试任务管理功能',
+                autoRemove: true,
+                duration: 5000
+            });
+
+            // 开始任务
+            setTimeout(() => {
+                FeedbackManager.startTask(taskId);
+            }, 500);
+
+            // 更新进度
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 10;
+                if (progress <= 100) {
+                    FeedbackManager.updateTaskProgress(taskId, progress);
+                } else {
+                    clearInterval(progressInterval);
+                }
+            }, 300);
+
+            // 完成任务
+            setTimeout(() => {
+                FeedbackManager.completeTask(taskId, '任务测试完成，所有功能正常工作！');
+            }, 3500);
+        }
+
+        // 测试加载状态
+        function testLoadingStatus() {
+            const loadingArea = document.getElementById('loading-test-area');
+            
+            // 显示加载状态
+            FeedbackManager.showLoading(loadingArea, '正在加载测试数据...');
+            
+            // 模拟加载过程
+            setTimeout(() => {
+                // 隐藏加载状态
+                FeedbackManager.hideLoading(loadingArea);
+                
+                // 显示加载完成消息
+                FeedbackManager.showSuccess('加载测试完成', {
+                    title: '加载完成',
+                    duration: 3000
+                });
+            }, 2000);
+        }
+
+        // 测试确认对话框
+        function testConfirmDialog() {
+            FeedbackManager.showConfirm(
+                '确认操作',
+                '您确定要执行此操作吗？这将测试确认对话框的功能。',
+                function() {
+                    FeedbackManager.showSuccess('您点击了确认按钮', {
+                        title: '操作确认',
+                        duration: 3000
+                    });
+                },
+                function() {
+                    FeedbackManager.showInfo('您点击了取消按钮', {
+                        title: '操作取消',
+                        duration: 3000
+                    });
+                }
+            );
+        }
+
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', async () => {
+            await Utils.initPage();
+            FeedbackManager.init();
+            
+            // 显示初始化成功消息
+            setTimeout(() => {
+                FeedbackManager.showSuccess('反馈系统初始化成功', {
+                    title: '初始化完成',
+                    duration: 3000
+                });
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

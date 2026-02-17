@@ -9,7 +9,7 @@ const API_BASE_URL = 'http://localhost:5001/api';
 // 通用工具函数
 const Utils = {
     // 发送API请求
-    async fetchAPI(endpoint, method = 'GET', data = null) {
+    async fetchAPI(endpoint, method = 'GET', data = null, encrypt = false, isSSH = false) {
         try {
             const headers = {
                 'Content-Type': 'application/json'
@@ -22,7 +22,13 @@ const Utils = {
             };
             
             if (data) {
-                config.body = JSON.stringify(data);
+                if (encrypt) {
+                    // 加密请求数据
+                    const encryptedRequest = await SecureClient.encryptRequest(data, isSSH);
+                    config.body = JSON.stringify(encryptedRequest);
+                } else {
+                    config.body = JSON.stringify(data);
+                }
             }
             
             const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
@@ -31,7 +37,14 @@ const Utils = {
                 throw new Error(`API请求失败: ${response.status}`);
             }
             
-            return await response.json();
+            const responseData = await response.json();
+            
+            // 处理加密的响应
+            if (encrypt && responseData.encryption) {
+                return await SecureClient.decryptResponse(responseData);
+            }
+            
+            return responseData;
         } catch (error) {
             console.error('API请求错误:', error);
             throw error;
@@ -131,12 +144,34 @@ const Utils = {
     },
     
     // 初始化页面
-    initPage() {
+    async initPage() {
         // 添加导航菜单高亮
         this.initNavigation();
         
         // 添加响应式处理
         this.initResponsive();
+        
+        // 初始化加密客户端
+        await this.initEncryption();
+    },
+    
+    // 初始化加密客户端
+    async initEncryption() {
+        try {
+            // 初始化加密客户端
+            await SecureClient.init();
+            
+            // 获取服务器公钥
+            const response = await this.fetchAPI('/system/public-key');
+            if (response.success) {
+                const serverPublicKey = response.public_key;
+                await SecureClient.setServerPublicKey(serverPublicKey);
+                console.log('加密系统初始化成功');
+            }
+        } catch (error) {
+            console.error('初始化加密系统失败:', error);
+            // 继续执行，不阻止页面加载
+        }
     },
     
     // 初始化导航菜单
@@ -556,7 +591,246 @@ const ChartGenerator = {
     }
 };
 
+// 验证器
+const Validator = {
+    // 验证规则
+    rules: {
+        // 客户端ID验证
+        clientId: {
+            required: true,
+            min: 1,
+            max: 100,
+            message: '客户端ID必须是1-100之间的整数'
+        },
+        // 轮次范围验证
+        roundRange: {
+            required: true,
+            min: 1,
+            max: 1000,
+            message: '轮次必须是1-1000之间的整数'
+        },
+        // 城市验证
+        city: {
+            required: true,
+            minLength: 2,
+            maxLength: 20,
+            message: '城市名称不能为空且长度必须在2-20之间'
+        },
+        // 用户ID验证
+        userId: {
+            required: true,
+            min: 1,
+            max: 1000000,
+            message: '用户ID必须是1-1000000之间的整数'
+        },
+        // TopK验证
+        topK: {
+            required: true,
+            min: 1,
+            max: 50,
+            message: '推荐数量必须是1-50之间的整数'
+        },
+        // 轮次验证
+        round: {
+            required: true,
+            min: 0,
+            max: 1000,
+            message: '轮次必须是0-1000之间的整数'
+        },
+        // 客户端ID列表验证
+        clientIds: {
+            required: true,
+            minLength: 1,
+            maxLength: 20,
+            message: '至少选择一个客户端，最多选择20个客户端'
+        },
+        // 城市列表验证
+        cities: {
+            required: true,
+            minLength: 1,
+            maxLength: 10,
+            message: '至少选择一个城市，最多选择10个城市'
+        }
+    },
+    
+    // 验证单个值
+    validateValue(value, rule) {
+        if (rule.required && !value) {
+            return rule.message || '该字段不能为空';
+        }
+        
+        if (value === null || value === undefined || value === '') {
+            return null;
+        }
+        
+        const numValue = Number(value);
+        if (rule.min !== undefined && numValue < rule.min) {
+            return rule.message || `值不能小于${rule.min}`;
+        }
+        
+        if (rule.max !== undefined && numValue > rule.max) {
+            return rule.message || `值不能大于${rule.max}`;
+        }
+        
+        if (rule.minLength !== undefined && value.length < rule.minLength) {
+            return rule.message || `长度不能小于${rule.minLength}`;
+        }
+        
+        if (rule.maxLength !== undefined && value.length > rule.maxLength) {
+            return rule.message || `长度不能大于${rule.maxLength}`;
+        }
+        
+        return null;
+    },
+    
+    // 验证对象
+    validate(data, rules) {
+        const errors = {};
+        
+        for (const [field, rule] of Object.entries(rules)) {
+            const value = data[field];
+            const error = this.validateValue(value, rule);
+            if (error) {
+                errors[field] = error;
+            }
+        }
+        
+        return {
+            isValid: Object.keys(errors).length === 0,
+            errors
+        };
+    },
+    
+    // 验证轮次范围
+    validateRoundRange(range) {
+        if (!range || range.length !== 2) {
+            return '轮次范围必须是包含两个元素的数组';
+        }
+        
+        const [start, end] = range;
+        const startError = this.validateValue(start, this.rules.roundRange);
+        const endError = this.validateValue(end, this.rules.roundRange);
+        
+        if (startError) return startError;
+        if (endError) return endError;
+        if (Number(start) > Number(end)) {
+            return '开始轮次不能大于结束轮次';
+        }
+        
+        return null;
+    },
+    
+    // 验证客户端ID列表
+    validateClientIds(ids) {
+        if (!Array.isArray(ids)) {
+            return '客户端ID列表必须是数组';
+        }
+        
+        const error = this.validateValue(ids, this.rules.clientIds);
+        if (error) return error;
+        
+        for (const id of ids) {
+            const idError = this.validateValue(id, this.rules.clientId);
+            if (idError) return idError;
+        }
+        
+        return null;
+    },
+    
+    // 验证城市列表
+    validateCities(cities) {
+        if (!Array.isArray(cities)) {
+            return '城市列表必须是数组';
+        }
+        
+        const error = this.validateValue(cities, this.rules.cities);
+        if (error) return error;
+        
+        for (const city of cities) {
+            const cityError = this.validateValue(city, this.rules.city);
+            if (cityError) return cityError;
+        }
+        
+        return null;
+    },
+    
+    // 显示错误信息
+    showError(element, error) {
+        if (!element) return;
+        
+        // 移除现有的错误信息
+        const existingError = element.nextElementSibling;
+        if (existingError && existingError.classList.contains('validation-error')) {
+            existingError.remove();
+        }
+        
+        // 添加新的错误信息
+        if (error) {
+            const errorElement = document.createElement('div');
+            errorElement.className = 'validation-error';
+            errorElement.textContent = error;
+            element.classList.add('input-error');
+            element.parentNode.insertBefore(errorElement, element.nextSibling);
+        } else {
+            element.classList.remove('input-error');
+        }
+    },
+    
+    // 清除错误信息
+    clearError(element) {
+        if (!element) return;
+        
+        element.classList.remove('input-error');
+        const existingError = element.nextElementSibling;
+        if (existingError && existingError.classList.contains('validation-error')) {
+            existingError.remove();
+        }
+    },
+    
+    // 添加实时验证
+    addRealTimeValidation(element, rule) {
+        if (!element) return;
+        
+        element.addEventListener('input', () => {
+            const value = element.value;
+            const error = this.validateValue(value, rule);
+            this.showError(element, error);
+        });
+        
+        element.addEventListener('blur', () => {
+            const value = element.value;
+            const error = this.validateValue(value, rule);
+            this.showError(element, error);
+        });
+    },
+    
+    // 添加表单验证
+    addFormValidation(form, validationRules) {
+        if (!form) return;
+        
+        form.addEventListener('submit', (e) => {
+            const formData = new FormData(form);
+            const data = {};
+            
+            for (const [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            
+            const validation = this.validate(data, validationRules);
+            if (!validation.isValid) {
+                e.preventDefault();
+                
+                // 显示所有错误
+                for (const [field, error] of Object.entries(validation.errors)) {
+                    const element = form.querySelector(`[name="${field}"]`);
+                    this.showError(element, error);
+                }
+            }
+        });
+    }
+};
+
 // 页面加载完成后初始化
-window.addEventListener('DOMContentLoaded', () => {
-    Utils.initPage();
+window.addEventListener('DOMContentLoaded', async () => {
+    await Utils.initPage();
 });

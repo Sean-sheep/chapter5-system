@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSH凭证管理 - 城市旅游消费个性化推荐系统</title>
+    <!-- 引入CSS样式 -->
+    <link rel="stylesheet" href="../../css/style.css">
+    <!-- 引入主JavaScript文件 -->
+    <script src="../../js/main.js"></script>
+    <!-- 引入加密模块 -->
+    <script src="../../js/crypto.js"></script>
+</head>
+<body>
+    <!-- 头部 -->
+    <header class="header">
+        <div class="container">
+            <h1>城市旅游消费个性化推荐系统</h1>
+        </div>
+    </header>
+
+    <!-- 导航菜单 -->
+    <nav class="nav">
+        <div class="container">
+            <ul>
+                <li><a href="../../index.html">首页</a></li>
+                <li><a href="../communication/index.html">通信压缩分析</a></li>
+                <li><a href="../adaptive/index.html">自适应迭代分析</a></li>
+                <li><a href="../personalization/index.html">个性化权重分析</a></li>
+                <li><a href="../recommendation/index.html">推荐展示</a></li>
+                <li><a href="../comparison/index.html">综合对比</a></li>
+                <li><a href="index.html">训练参数输入</a></li>
+                <li><a href="ssh.html" class="active">SSH凭证管理</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="container">
+        <!-- 页面标题 -->
+        <section class="card">
+            <h2>SSH凭证管理</h2>
+            <p>请输入SSH服务器凭证，系统将使用加密通道安全传输这些信息。</p>
+        </section>
+
+        <!-- SSH凭证表单 -->
+        <section class="card">
+            <h2>SSH凭证设置</h2>
+            <form id="ssh-form">
+                <div class="form-grid">
+                    <!-- 服务器信息 -->
+                    <div class="form-group">
+                        <label for="hostname">服务器地址</label>
+                        <input type="text" id="hostname" name="hostname" placeholder="例如: 192.168.1.100" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="port">SSH端口</label>
+                        <input type="number" id="port" name="port" min="1" max="65535" value="22" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="username">用户名</label>
+                        <input type="text" id="username" name="username" placeholder="例如: root" required>
+                    </div>
+
+                    <!-- 认证方式 -->
+                    <div class="form-group">
+                        <label for="auth-method">认证方式</label>
+                        <select id="auth-method" name="auth_method" required>
+                            <option value="password">密码认证</option>
+                            <option value="key">密钥认证</option>
+                        </select>
+                    </div>
+
+                    <!-- 密码认证 -->
+                    <div class="form-group auth-password">
+                        <label for="password">密码</label>
+                        <input type="password" id="password" name="password" placeholder="输入SSH密码">
+                    </div>
+
+                    <!-- 密钥认证 -->
+                    <div class="form-group auth-key" style="display: none;">
+                        <label for="private-key">私钥文件</label>
+                        <textarea id="private-key" name="private_key" rows="10" placeholder="粘贴私钥内容"></textarea>
+                    </div>
+
+                    <div class="form-group auth-key" style="display: none;">
+                        <label for="passphrase">密钥密码（如果有）</label>
+                        <input type="password" id="passphrase" name="passphrase" placeholder="输入密钥密码">
+                    </div>
+                </div>
+
+                <!-- 提交按钮 -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">保存SSH凭证</button>
+                    <button type="reset" class="btn btn-secondary">重置表单</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- SSH状态 -->
+        <section class="card">
+            <h2>SSH状态</h2>
+            <div id="ssh-status">
+                <p>等待设置SSH凭证...</p>
+            </div>
+        </section>
+
+        <!-- 加密状态 -->
+        <section class="card">
+            <h2>加密状态</h2>
+            <div id="encryption-status">
+                <p>加密系统初始化中...</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 城市旅游消费个性化推荐系统</p>
+        </div>
+    </footer>
+
+    <!-- 页面脚本 -->
+    <script>
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', async () => {
+            // 初始化页面
+            Utils.initPage();
+            
+            // 初始化认证方式切换
+            initAuthMethodToggle();
+            
+            // 初始化加密系统
+            await initEncryption();
+            
+            // 初始化表单
+            initSSHForm();
+        });
+
+        // 初始化认证方式切换
+        function initAuthMethodToggle() {
+            const authMethod = document.getElementById('auth-method');
+            const passwordFields = document.querySelectorAll('.auth-password');
+            const keyFields = document.querySelectorAll('.auth-key');
+
+            authMethod.addEventListener('change', () => {
+                const method = authMethod.value;
+                
+                if (method === 'password') {
+                    passwordFields.forEach(field => field.style.display = 'block');
+                    keyFields.forEach(field => field.style.display = 'none');
+                } else {
+                    passwordFields.forEach(field => field.style.display = 'none');
+                    keyFields.forEach(field => field.style.display = 'block');
+                }
+            });
+        }
+
+        // 初始化加密系统
+        async function initEncryption() {
+            const encryptionStatus = document.getElementById('encryption-status');
+            
+            try {
+                // 初始化加密客户端
+                await SecureClient.init();
+                
+                // 获取服务器公钥
+                const response = await fetch(`${API_BASE_URL}/system/public-key`);
+                if (!response.ok) {
+                    throw new Error('获取服务器公钥失败');
+                }
+                
+                const data = await response.json();
+                const serverPublicKey = data.public_key;
+                
+                // 设置服务器公钥
+                await SecureClient.setServerPublicKey(serverPublicKey);
+                
+                encryptionStatus.innerHTML = '<div class="info">加密系统初始化成功，已设置服务器公钥</div>';
+            } catch (error) {
+                console.error('初始化加密系统失败:', error);
+                encryptionStatus.innerHTML = `<div class="error">初始化加密系统失败: ${error.message}</div>`;
+            }
+        }
+
+        // 初始化SSH表单
+        function initSSHForm() {
+            const form = document.getElementById('ssh-form');
+            const sshStatus = document.getElementById('ssh-status');
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                // 显示加载状态
+                sshStatus.innerHTML = '<div class="loading-container"><div class="loading"></div><span style="margin-left: 10px;">正在处理...</span></div>';
+
+                // 获取表单数据
+                const formData = new FormData(form);
+                const sshData = {};
+                
+                formData.forEach((value, key) => {
+                    sshData[key] = value;
+                });
+
+                // 构建SSH凭证数据
+                const credentials = {
+                    hostname: sshData.hostname,
+                    port: parseInt(sshData.port),
+                    username: sshData.username
+                };
+
+                // 根据认证方式添加相应字段
+                if (sshData.auth_method === 'password') {
+                    credentials.password = sshData.password;
+                } else {
+                    credentials.private_key = sshData.private_key;
+                    if (sshData.passphrase) {
+                        credentials.passphrase = sshData.passphrase;
+                    }
+                }
+
+                try {
+                    // 加密SSH凭证
+                    const encryptedRequest = await SecureClient.encryptRequest(credentials, true);
+                    
+                    // 发送加密请求
+                    const response = await fetch(`${API_BASE_URL}/system/ssh-credentials`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(encryptedRequest)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('保存SSH凭证失败');
+                    }
+
+                    const result = await response.json();
+                    
+                    // 显示成功状态
+                    sshStatus.innerHTML = '<div class="info">SSH凭证保存成功！</div>';
+                } catch (error) {
+                    console.error('保存SSH凭证失败:', error);
+                    sshStatus.innerHTML = `<div class="error">保存SSH凭证失败: ${error.message}</div>`;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
